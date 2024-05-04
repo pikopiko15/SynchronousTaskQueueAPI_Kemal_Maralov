@@ -23,7 +23,7 @@ namespace SynchronousTaskQueueAPI.Controllers
         [Route("api/process")]
         public async Task<IActionResult> ProcessRequest([FromBody] Request request)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || request.Message.Length > 100)
             {
                 return BadRequest("Invalid request format");
             }
@@ -37,7 +37,18 @@ namespace SynchronousTaskQueueAPI.Controllers
                 ProcessingTime = processingTime
             };
 
+            WriteToFile(response, request.Message);
+
             return Ok(response);
+        }
+
+        private void WriteToFile(Response response, string message)
+        {
+            string filePath = @"messages.txt";
+            using (StreamWriter writer = new StreamWriter(filePath, true))
+            {
+                writer.WriteLine($"{response.RequestTime} | {response.WriteTime} | {message}");
+            }
         }
     }
 }
